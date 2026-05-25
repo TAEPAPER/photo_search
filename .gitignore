@@ -1,0 +1,18 @@
+
+# Project-specific
+.venv/
+data/photos/
+data/*.npy
+data/*.parquet
+.env
+.DS_Store
+*.egg-info/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Model & vector store local data
+*.pt
+*.bin
+*.onnx
+qdrant_storage/
