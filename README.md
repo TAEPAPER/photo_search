@@ -1,7 +1,7 @@
 # photo-search
 
 자연어로 내 사진첩을 검색하는 토이 프로젝트.
-**CLIP** (멀티모달 임베딩) + **Qdrant** (벡터DB) + **FastAPI**(예정) + **Streamlit**(예정).
+**CLIP** (멀티모달 임베딩) + **Qdrant** (벡터DB) + **FastAPI** + **Streamlit**.
 
 > 백엔드 → AI 전환 학습용. CV + 멀티모달 + 검색 + 백엔드를 한 번에 손에 익히는 것이 목표.
 
@@ -14,8 +14,8 @@
 - [x] Qdrant 벡터 스토어 추상화 (`photo_search/vector_store.py`)
 - [x] 사진 폴더 인덱싱 CLI (`photo_search/indexer.py`)
 - [x] 텍스트 → top-K 검색 CLI (`photo_search/search.py`)
-- [ ] FastAPI 엔드포인트 (`photo_search/api.py`)
-- [ ] Streamlit UI (`ui/app.py`)
+- [x] FastAPI 엔드포인트 (`photo_search/api.py`)
+- [x] Streamlit UI (`ui/app.py`)
 - [ ] 다국어 검색 (multilingual CLIP)
 - [ ] 영상 / YOLO 검출 확장
 
