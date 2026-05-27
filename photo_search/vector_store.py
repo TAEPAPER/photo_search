@@ -53,17 +53,24 @@ class VectorStore:
             return
         self.client.upsert(collection_name=self.collection, points=points)
 
-    def search(self, vector: list[float], top_k: int = 10) -> list[SearchHit]:
-        """Return the top_k most similar points to the query vector.
+    def search(
+        self,
+        vector: list[float],
+        limit: int = 1000,
+        score_threshold: float | None = None,
+    ) -> list[SearchHit]:
+        """Return all points above `score_threshold`, capped at `limit`.
 
-        Uses qdrant-client's `query_points` (the `search` method was removed in
-        recent versions). `query_points` is the unified entry point that also
-        supports filters and hybrid search.
+        - `score_threshold` is applied by Qdrant itself (server-side filter),
+          which avoids transferring uninteresting points over the wire.
+        - `limit` is kept as a safety cap. For a small photo library we just
+          set it very high so it effectively means "no cap".
         """
         response = self.client.query_points(
             collection_name=self.collection,
             query=vector,
-            limit=top_k,
+            limit=limit,
+            score_threshold=score_threshold,
         )
         return [
             SearchHit(id=r.id, score=r.score, payload=r.payload or {})

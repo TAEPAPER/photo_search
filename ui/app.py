@@ -25,8 +25,20 @@ st.caption("Natural-language search over your photos, powered by CLIP + Qdrant."
 
 with st.sidebar:
     st.header("Settings")
-    top_k = st.slider("Top K", min_value=1, max_value=20, value=6)
+    min_score = st.slider(
+        "Minimum score",
+        min_value=0.00, max_value=0.40, value=0.22, step=0.01,
+        help="Cosine-similarity cutoff applied by Qdrant. "
+             "CLIP scores are usually 0.20~0.30 for relevant matches; "
+             "lower this slider to see more (noisier) results, raise it for stricter ones.",
+    )
     columns = st.slider("Columns", min_value=1, max_value=6, value=3)
+    auto_expand = st.checkbox(
+        "Auto-expand query ('food' → 'a photo of food')",
+        value=True,
+        help="CLIP is trained on natural sentences. A one-word query often "
+             "scores worse than 'a photo of <word>'.",
+    )
     api_base = st.text_input("API base URL", value=API_BASE)
 
     st.divider()
@@ -54,12 +66,22 @@ if not query:
     st.stop()
 
 
+# --- Build the actual query sent to the API -----------------------------------
+
+# CLIP works better on short natural sentences than on bare nouns.
+effective_query = (
+    f"a photo of {query}"
+    if auto_expand and not query.lower().startswith(("a photo", "a picture"))
+    else query
+)
+
+
 # --- Call the API -------------------------------------------------------------
 
 try:
     response = requests.get(
         f"{api_base}/search",
-        params={"q": query, "top_k": top_k},
+        params={"q": effective_query, "min_score": min_score},
         timeout=30,
     )
     response.raise_for_status()
@@ -70,14 +92,19 @@ except requests.RequestException as exc:
 data = response.json()
 hits = data.get("hits", [])
 
-if not hits:
-    st.warning("No results. Did you index your photos with `python -m photo_search.indexer`?")
-    st.stop()
-
 
 # --- Render results as a grid -------------------------------------------------
 
-st.subheader(f'Results for "{data["query"]}" — {len(hits)} hit(s)')
+st.subheader(
+    f'Results for "{data["query"]}" — {len(hits)} hit(s) above score {min_score:.2f}'
+)
+
+if not hits:
+    st.info(
+        "No photos pass the score threshold. "
+        "Try lowering it in the sidebar or rephrasing the query."
+    )
+    st.stop()
 
 cols = st.columns(columns)
 for i, hit in enumerate(hits):

@@ -68,11 +68,18 @@ def health() -> dict[str, str]:
 @app.get("/search", response_model=SearchResponse)
 def search(
     q: str = Query(min_length=1, description="Natural language query"),
-    top_k: int = Query(default=10, ge=1, le=50),
+    min_score: float = Query(
+        default=0.22, ge=0.0, le=1.0,
+        description="Cosine-similarity cutoff. Hits below this are filtered out by Qdrant.",
+    ),
+    limit: int = Query(
+        default=1000, ge=1, le=10000,
+        description="Safety cap on the number of results. Defaults to effectively unlimited.",
+    ),
     searcher: PhotoSearcher = Depends(get_searcher),
 ) -> SearchResponse:
-    """Text -> top-K matching photos."""
-    hits = searcher.search(q, top_k=top_k)
+    """Text -> all photos with cosine similarity above min_score."""
+    hits = searcher.search(q, min_score=min_score, limit=limit)
     return SearchResponse(
         query=q,
         hits=[

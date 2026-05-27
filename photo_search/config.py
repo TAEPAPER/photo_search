@@ -15,7 +15,12 @@ PHOTOS_DIR = PROJECT_ROOT / "data" / "photos"
 
 # --- CLIP model --------------------------------------------------------------
 
-MODEL_NAME = "openai/clip-vit-base-patch32"
+# Larger CLIP variant with patch size 14 (vs 32 on the base model).
+# - Embedding dim: 768 (vs 512 on base) — collection must be recreated.
+# - Download: ~1.7GB (one-time)
+# - Indexing: ~2-3x slower per image; query latency only mildly higher
+# - Quality: noticeably better at fine-grained discrimination
+MODEL_NAME = "openai/clip-vit-large-patch14"
 
 # --- Qdrant ------------------------------------------------------------------
 
